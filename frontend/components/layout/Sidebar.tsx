@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, MessageSquare, Mic, History, Settings,
   User, Brain, CreditCard, ChevronLeft, ChevronRight,
-  Sparkles, LogOut, Bell, Search, Zap
+  Sparkles, LogOut, Bell, Search, Zap, Shield
 } from "lucide-react";
 import { useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 
 const NAV_ITEMS = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -19,11 +20,21 @@ const NAV_ITEMS = [
   { href: "/settings", icon: Settings, label: "Settings" },
   { href: "/profile", icon: User, label: "Profile" },
   { href: "/subscription", icon: CreditCard, label: "Subscription" },
+  { href: "/admin", icon: Shield, label: "Admin" },
 ];
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
+
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "?";
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   return (
     <motion.aside
@@ -121,10 +132,14 @@ export function Sidebar() {
 
       {/* ── User Section ── */}
       <div className="px-3 py-4 border-t border-white/[0.06] flex-shrink-0">
-        <div className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.04] cursor-pointer transition-colors ${collapsed ? "justify-center" : ""}`}>
+        <div
+          onClick={handleLogout}
+          className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.04] cursor-pointer transition-colors ${collapsed ? "justify-center" : ""}`}
+          title="Sign out"
+        >
           <div className="relative flex-shrink-0">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white">
-              G
+              {userInitial}
             </div>
             <div className="status-dot online absolute -bottom-0.5 -right-0.5 border-2 border-[var(--bg-surface)]" />
           </div>
@@ -135,8 +150,12 @@ export function Sidebar() {
               exit={{ opacity: 0 }}
               className="flex-1 min-w-0"
             >
-              <div className="text-sm font-semibold text-white truncate">Gautam Saini</div>
-              <div className="text-xs text-white/40 truncate">Pro Plan</div>
+              <div className="text-sm font-semibold text-white truncate">
+                {user?.name || user?.email?.split("@")[0] || "User"}
+              </div>
+              <div className="text-xs text-white/40 truncate capitalize">
+                {user?.subscription_tier || "Free"} Plan
+              </div>
             </motion.div>
           )}
           {!collapsed && (
@@ -162,6 +181,8 @@ export function Sidebar() {
 }
 
 export function TopBar({ title }: { title: string }) {
+  const { user } = useAuthStore();
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "?";
   return (
     <header
       className="page-header gap-4"
@@ -180,7 +201,7 @@ export function TopBar({ title }: { title: string }) {
           <Search size={18} />
         </button>
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white cursor-pointer">
-          G
+          {userInitial}
         </div>
       </div>
     </header>

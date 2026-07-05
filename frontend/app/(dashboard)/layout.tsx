@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/layout/Sidebar";
+import { AuthGuard } from "@/components/auth/ProtectedRoute";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,9 +15,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="dashboard-layout">
-      <Sidebar />
-      <div className="main-content">{children}</div>
-    </div>
+    <AuthGuard>
+      <div className="dashboard-layout">
+        <Sidebar />
+        <div className="main-content">{children}</div>
+      </div>
+    </AuthGuard>
   );
 }

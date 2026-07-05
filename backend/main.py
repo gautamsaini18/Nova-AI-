@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse
 
 from backend.core.config import settings
 from backend.core.logging_config import NovaLogger, setup_logging
+from backend.core.rate_limiter import RateLimitMiddleware
 from backend.database.session import init_db, close_db
 
 # Initialize logging first
@@ -23,10 +24,14 @@ setup_logging()
 logger = NovaLogger("main")
 
 # Import routers
+from backend.api.admin import router as admin_router
+from backend.api.auth import router as auth_router
+from backend.api.calculator import router as calculator_router
 from backend.api.chat import router as chat_router
-from backend.api.voice import router as voice_router
 from backend.api.memory import router as memory_router
 from backend.api.settings_api import router as settings_router
+from backend.api.timer import router as timer_router
+from backend.api.voice import router as voice_router
 
 
 @asynccontextmanager
@@ -62,6 +67,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(RateLimitMiddleware)
 
 
 @app.middleware("http")
@@ -82,10 +88,14 @@ async def request_timing_middleware(request: Request, call_next):
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+app.include_router(admin_router, prefix="/api/v1/admin", tags=["Admin"])
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["Auth"])
+app.include_router(calculator_router, prefix="/api/v1/calculator", tags=["Calculator"])
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["Chat"])
-app.include_router(voice_router, prefix="/api/v1/voice", tags=["Voice"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["Memory"])
 app.include_router(settings_router, prefix="/api/v1/settings", tags=["Settings"])
+app.include_router(timer_router, prefix="/api/v1/timer", tags=["Timer"])
+app.include_router(voice_router, prefix="/api/v1/voice", tags=["Voice"])
 
 
 @app.get("/", tags=["Health"])

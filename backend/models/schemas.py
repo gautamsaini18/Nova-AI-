@@ -57,6 +57,25 @@ class UserProfile(BaseModel):
     last_active: Optional[datetime] = None
 
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class FirebaseLoginRequest(BaseModel):
+    id_token: str
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class AuthStatusResponse(BaseModel):
+    authenticated: bool
+    user: Optional[UserProfile] = None
+
+
 # ── Chat ──────────────────────────────────────────────────────────────────────
 
 class MessageRole(str, Enum):
@@ -179,3 +198,89 @@ class UpdateSettingsRequest(BaseModel):
     auto_save_conversations: Optional[bool] = None
     privacy_mode: Optional[bool] = None
     timezone: Optional[str] = None
+
+
+# ── Calculator ──────────────────────────────────────────────────────────────────
+
+class CalculateRequest(BaseModel):
+    operation: str = Field(..., pattern="^(add|subtract|multiply|divide|power|sqrt|percent|sin|cos|tan|log|ln|abs|round|floor|ceil)$")
+    a: float
+    b: Optional[float] = None
+
+
+class EvaluateRequest(BaseModel):
+    expression: str = Field(..., min_length=1, max_length=500)
+
+
+class CalculateResponse(BaseModel):
+    result: str
+    value: float
+    operation: str
+    formatted: str
+
+
+# ── Timer ──────────────────────────────────────────────────────────────────────
+
+class TimerCreateRequest(BaseModel):
+    seconds: float = Field(..., gt=0, le=86400)
+    label: str = "Timer"
+
+
+class TimerResponse(BaseModel):
+    id: str
+    label: str
+    duration_seconds: float
+    remaining_seconds: float
+    progress: float
+    status: str
+    created_at: datetime
+    finished_at: Optional[datetime] = None
+    formatted_remaining: str
+    formatted_duration: str
+
+
+class StopwatchCreateRequest(BaseModel):
+    label: str = "Stopwatch"
+
+
+class StopwatchResponse(BaseModel):
+    id: str
+    label: str
+    elapsed_seconds: float
+    status: str
+    created_at: datetime
+    formatted_elapsed: str
+
+
+# ── Admin ───────────────────────────────────────────────────────────────────────
+
+class SystemStats(BaseModel):
+    total_users: int = 0
+    total_conversations: int = 0
+    total_messages: int = 0
+    total_memories: int = 0
+    total_reminders: int = 0
+    active_timers: int = 0
+    active_stopwatches: int = 0
+    active_plugins: int = 0
+    database_size_bytes: int = 0
+    uptime_seconds: float = 0.0
+    version: str = "1.0.0"
+
+
+class PluginInfo(BaseModel):
+    name: str
+    version: str
+    enabled: bool
+    description: str
+
+
+class UserListItem(BaseModel):
+    id: str
+    name: str
+    email: str
+    plan: str
+    is_active: bool
+    created_at: datetime
+    last_active: Optional[datetime] = None
+    conversation_count: int = 0
