@@ -1,0 +1,5 @@
+.env.local
+.git
+.gitignore
+*.md
+node_modules/.cache

@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+*.pyo
+.env
+.git
+.gitignore
+tests/
+logs/
+chroma_db/
+nova_ai.db
+*.md
